@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>동네 어르신 고민 해결소</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f1f8e9; padding: 20px; }
+        #chat-box { height: 60vh; background: white; border-radius: 15px; padding: 20px; overflow-y: auto; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); font-size: 1.2em; line-height: 1.6; }
+        .user-msg { color: #33691e; text-align: right; margin-bottom: 15px; font-weight: bold; }
+        .bot-msg { color: #333; text-align: left; margin-bottom: 15px; background-color: #dcedc8; padding: 15px; border-radius: 15px; display: inline-block; width: 85%; }
+        .lang-badge { font-weight: bold; color: #558b2f; }
+        input { width: 75%; padding: 15px; font-size: 1.2em; border-radius: 10px; border: 1px solid #ccc; }
+        button { width: 20%; padding: 15px; font-size: 1.2em; background-color: #689f38; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: #33691e;">👵👴 동네 어르신의 고민을 들어주세요!</h1>
+    <div id="chat-box"></div>
+    <div style="display: flex; justify-content: space-between;">
+        <input type="text" id="user-input" placeholder="숫자(1, 2, 3)를 입력해 대화를 시작하세요!" onkeypress="if(event.key === 'Enter') sendMessage()">
+        <button onclick="sendMessage()">보내기</button>
+    </div>
+
+    <script>
+        // ⚠️ 여기에 선생님의 진짜 API 키를 넣으세요!
+        const API_KEY = "AQ.Ab8RN6JULjgvJte0vyS6uVUmUd_8xDdH6UdPOCHS8d6f4lHHHg"; 
+        const chatBox = document.getElementById('chat-box');
+
+        // 입력된 숫자에 따라 캐릭터를 고르도록 프롬프트 수정
+        const systemPrompt = `[역할 및 페르소나 부여]
+너는 초등학교 3학년 학생들과 대화를 나누는 우리 동네 어르신이야. 학생이 처음 입력하는 숫자(1, 2, 3)에 따라 아래 캐릭터 중 하나로 완벽하게 빙의해서 대화해 줘. (빙의 후에는 챗봇이라는 사실을 잊고 어르신으로만 행동해)
+- '1' 입력 시: 재정이 부족한 어르신 (은퇴 후 반찬거리 살 돈도 부족해 막막함. 학생이 면사무소 복지 혜택 등을 알려주기를 원함)
+- '2' 입력 시: 외롭고 심심한 어르신 (은퇴 후 시간이 남고 적적함. 학생이 마을회관, 노인정 등 장소를 제안해 주기를 원함)
+- '3' 입력 시: 스마트폰이 어려운 어르신 (손주와 영상통화 하고 싶은데 조작법을 모름. 학생이 그림 설명서를 그려주기를 원함)
+
+[대화 및 문제 해결 규칙]
+1. 첫 대화 시작 (숫자 입력 시): 학생이 숫자를 입력하면, 해당 어르신에 빙의해서 "아이고... 에휴... 요즘 영 기운이 안 나네..." 처럼 한숨을 쉬며 기운 없는 티만 내며 대화를 시작해. (절대 처음부터 진짜 고민을 말하지 마!)
+2. 스무고개식 대화: 학생이 "왜 그러세요?"라고 물어볼 때마다 아주 조금씩 힌트를 줘.
+3. 구체적인 해결책 유도: 추상적인 해결책(예: 돈 벌어요, 행복하세요)은 부드럽게 거절하고, "마음은 고맙지만 어디(기관)에 가서 도와달라고 할까?", "어떻게 하는지 그림으로 그려줄래?"라며 구체적인 방법을 물어봐 줘.
+4. 해결책 수용 및 칭찬: 면사무소, 마을회관, 그림 그려주기 등 구체적인 방향(해결책)이 제시되면 완벽하게 기뻐하며 제안을 받아들여 줘.
+5. 미션 완료: 학생 덕분에 고민이 해결되었다면, 엄청나게 칭찬해 준 뒤 반드시 대화 마지막에 **"이제 고민이 다 해결됐어. 선생님께 말해줘."**라고 출력하고 대화를 훈훈하게 마무리해.
+
+[출력 형식 및 다국어 지원 (매우 중요)]
+네가 대답할 때는 반드시 아래의 3단계 형식과 언어 규칙을 지켜서 출력해 줘. (한 번에 3문장 이내로 짧게 대답해!)
+[한국어] 위 규칙에 맞춘 한국어 대답.
+[Uzbek] 한국어 원문보다 훨씬 더 간단하고 기초적인 단어와 짧은 문장으로 요약한 우즈베크어(Uzbek) 번역.
+[Bengali] 한국어 원문과 비슷한 수준과 길이로 자연스럽게 번역한 벵골어(Bengali) 번역.`;
+
+        let chatHistory = [];
+
+        // 🌟 접속 시 API를 호출하지 않고, HTML로 안내 멘트만 즉시 띄움
+        window.onload = () => {
+            chatBox.innerHTML += `<div class="bot-msg" style="background-color:#e8f5e9; border: 2px solid #a5d6a7;">
+                <strong>[준비가 되었습니다]</strong><br><br>
+                대화하고 싶은 어르신의 상황을 숫자로 입력해 주세요.<br>
+                <strong>1.</strong> 돈이 부족한 어르신<br>
+                <strong>2.</strong> 심심하고 외로운 어르신<br>
+                <strong>3.</strong> 스마트폰이 어려운 어르신
+            </div>`;
+        };
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const text = input.value;
+            if (!text) return;
+
+            chatBox.innerHTML += `<div class="user-msg">🧑 나: ${text}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            await fetchAI(text, false);
+        }
+
+        async function fetchAI(text) {
+            chatHistory.push({ role: "user", parts: [{ text: text }] });
+            
+            chatBox.innerHTML += `<div class="bot-msg" id="loading">👵👴 어르신 생각 중...</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: systemPrompt }] },
+                        contents: chatHistory
+                    })
+                });
+                
+                if (response.status === 429) {
+                    document.getElementById('loading').remove();
+                    chatBox.innerHTML += `<div class="bot-msg" style="color:#d84315;">👵👴 앗! 우리 강아지들이 한꺼번에 말하니 귀가 어두워서 잘 안 들리네. 10초만 있다가 다시 말해주겠니?</div>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    chatHistory.pop();
+                    return;
+                }
+
+                const data = await response.json();
+                document.getElementById('loading').remove();
+                
+                const reply = data.candidates[0].content.parts[0].text;
+                chatHistory.push({ role: "model", parts: [{ text: reply }] });
+                
+                let formattedReply = reply.replace(/\n/g, '<br>');
+                formattedReply = formattedReply.replace(/\[한국어\]/g, '<span class="lang-badge">[한국어]</span>');
+                formattedReply = formattedReply.replace(/\[Uzbek\]/g, '<br><span class="lang-badge">[Uzbek]</span>');
+                formattedReply = formattedReply.replace(/\[Bengali\]/g, '<br><span class="lang-badge">[Bengali]</span>');
+
+                chatBox.innerHTML += `<div class="bot-msg">어르신: <br><br>${formattedReply}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+                
+            } catch (error) {
+                document.getElementById('loading').remove();
+                chatBox.innerHTML += `<div class="bot-msg" style="color:red;">앗, 통신이 잠시 끊겼나 봐요. 새로고침 해주세요!</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
