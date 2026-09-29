@@ -27,7 +27,7 @@
         const API_KEY = "AQ.Ab8RN6JULjgvJte0vyS6uVUmUd_8xDdH6UdPOCHS8d6f4lHHHg"; 
         const chatBox = document.getElementById('chat-box');
 
-        // 입력된 숫자에 따라 캐릭터를 고르도록 프롬프트 수정
+        // 입력된 숫자에 따라 캐릭터를 고르도록 프롬프트 유지
         const systemPrompt = `[역할 및 페르소나 부여]
 너는 초등학교 3학년 학생들과 대화를 나누는 우리 동네 어르신이야. 학생이 처음 입력하는 숫자(1, 2, 3)에 따라 아래 캐릭터 중 하나로 완벽하게 빙의해서 대화해 줘. (빙의 후에는 챗봇이라는 사실을 잊고 어르신으로만 행동해)
 - '1' 입력 시: 재정이 부족한 어르신 (은퇴 후 반찬거리 살 돈도 부족해 막막함. 학생이 면사무소 복지 혜택 등을 알려주기를 원함)
@@ -49,14 +49,12 @@
 
         let chatHistory = [];
 
-        // 🌟 접속 시 API를 호출하지 않고, HTML로 안내 멘트만 즉시 띄움
+        // 🌟 접속 시 상황을 비밀로 하고 숫자만 고르도록 안내 멘트 수정
         window.onload = () => {
             chatBox.innerHTML += `<div class="bot-msg" style="background-color:#e8f5e9; border: 2px solid #a5d6a7;">
                 <strong>[준비가 되었습니다]</strong><br><br>
-                대화하고 싶은 어르신의 상황을 숫자로 입력해 주세요.<br>
-                <strong>1.</strong> 돈이 부족한 어르신<br>
-                <strong>2.</strong> 심심하고 외로운 어르신<br>
-                <strong>3.</strong> 스마트폰이 어려운 어르신
+                1, 2, 3 중 원하는 숫자를 하나 입력해 주세요.<br>
+                어떤 어르신이 어떤 고민을 안고 찾아오실까요? 번호를 눌러 대화를 시작해 보세요!
             </div>`;
         };
 
